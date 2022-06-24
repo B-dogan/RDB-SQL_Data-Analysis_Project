@@ -1,14 +1,14 @@
 SELECT *
 from cust_dimen
 
--- id sütununu temizleyerek daha güzel bir görüntü elde etmeye çalýþacaðým : 
--- hatýrlatma : 
+-- id sÃ¼tununu temizleyerek daha gÃ¼zel bir gÃ¶rÃ¼ntÃ¼ elde etmeye Ã§alÃ½Ã¾acaÃ°Ã½m : 
+-- hatÃ½rlatma : 
   SELECT SUBSTRING('Cust_1',6,25)
 
 SELECT SUBSTRING(C.Cust_id,6,25) AS Cust_id,C.Customer_Name,C.Province,C.Region,C.Customer_Segment              
 from cust_dimen C
 
----- 1) cust_dimen düzenlendi 
+---- 1) cust_dimen dÃ¼zenlendi 
 
 SELECT * 
 FROM market_fact
@@ -22,39 +22,39 @@ SELECT SUBSTRING(M.Ord_id,5,25) AS Ord_id,
 FROM market_fact M
 
 
--- 2) market_fact düzenlendi 
+-- 2) market_fact dÃ¼zenlendi 
 
 SELECT *
 FROM orders_dimen
 
--- BURADA  ORD_id bölümünde düzenlemeler yapacaðýz .
+-- BURADA  ORD_id bÃ¶lÃ¼mÃ¼nde dÃ¼zenlemeler yapacaÃ°Ã½z .
 
 SELECT SUBSTRING(o.Ord_id,5,25) AS Ord_id,o.Order_Date,o.Order_Priority
 FROM orders_dimen o
 
--- 3) orders_dimen düzenlendi 
+-- 3) orders_dimen dÃ¼zenlendi 
 
 
 SELECT *
 FROM prod_dimen
 
--- 4) Yukarýdaki iþlemi prod_id'ye uygulayacaðýz .
+-- 4) YukarÃ½daki iÃ¾lemi prod_id'ye uygulayacaÃ°Ã½z .
 
 SELECT SUBSTRING(P.Prod_id,6,25) AS Prod_id,p.Product_Category,p.Product_Sub_Category
 FROM prod_dimen P
 
--- 4)  prod_dimen düzenlendi 
+-- 4)  prod_dimen dÃ¼zenlendi 
 
 SELECT * 
 FROM shipping_dimen 
 
---- Ship_id 'de bunu uygulayacaðýz bu sefer de.
+--- Ship_id 'de bunu uygulayacaÃ°Ã½z bu sefer de.
 
 
 SELECT SUBSTRING(S.Ship_id,5,25) AS Ship_id, S.Order_ID , S.Ship_Mode,S.Ship_Date
 FROM shipping_dimen  S
 
--- 5)  shipping_dimen  düzenlendi .
+-- 5)  shipping_dimen  dÃ¼zenlendi .
 
 
 SELECT *
@@ -62,8 +62,8 @@ INTO newtable
 FROM (SELECT SUBSTRING(S.Ship_id,5,25) AS Ship_id, S.Order_ID , S.Ship_Mode,S.Ship_Date
         FROM shipping_dimen  S) a
 
---- þimdi sýrasýyla bunlarý kullanarak yeni tablolar oluþturacaðýz :
--- 1-cust_dimen  için : 
+--- Ã¾imdi sÃ½rasÃ½yla bunlarÃ½ kullanarak yeni tablolar oluÃ¾turacaÃ°Ã½z :
+-- 1-cust_dimen  iÃ§in : 
 
 SELECT *
 INTO customer
@@ -74,7 +74,7 @@ from cust_dimen C
 SELECT * 
 FROM customer
 
---2- market_fact için 
+--2- market_fact iÃ§in 
 
 SELECT * 
 INTO market_fct
@@ -88,7 +88,7 @@ FROM market_fact M) M_F
 SELECT *
 FROM market_fct
 
---3- orders_Dimen için :
+--3- orders_Dimen iÃ§in :
 
 SELECT * 
 INTO orders
@@ -98,7 +98,7 @@ FROM(SELECT SUBSTRING(o.Ord_id,5,25) AS Ord_id,o.Order_Date,o.Order_Priority
 SELECT * 
 FROM orders
 
---4 - prod_dimen için : 
+--4 - prod_dimen iÃ§in : 
 
 SELECT * 
 INTO product
@@ -121,4 +121,82 @@ FROM(SELECT SUBSTRING(S.Ship_id,5,25) AS Ship_id, S.Order_ID , S.Ship_Mode,S.Shi
 select * 
 from shipping
 
------------------------------------------------------ ilk commit
+-- SIRA GELDÄ° CONSTRAINTLERÄ° TANIMLAMAYA:
+
+-- CUSTOMER : 
+
+ALTER TABLE customer
+ALTER COLUMN Cust_id INT NOT NULL
+
+
+ALTER TABLE customer
+ADD CONSTRAINT customer_pk PRIMARY KEY(Cust_id)
+
+
+-- orders :
+
+
+ALTER TABLE orders
+ALTER COLUMN Ord_id INT NOT NULL
+
+ALTER TABLE orders
+ADD CONSTRAINT order_pk PRIMARY KEY(Ord_id)
+
+
+-- product : 
+
+ALTER TABLE product
+ALTER COLUMN Prod_id INT NOT NULL
+
+ALTER TABLE product
+ADD CONSTRAINT product_pk PRIMARY KEY(Prod_id)
+
+-- shipping
+
+ALTER TABLE shipping
+ALTER COLUMN Ship_id INT NOT NULL
+
+ALTER TABLE shipping
+ADD CONSTRAINT shipping_pk PRIMARY KEY(Ship_id)
+
+-- market_fct: 
+
+-- pk yapabileceÄŸimiz halihazÄ±rda bir sÃ¼tun olmadÄ±ÄŸÄ±ndan ÅŸunu yapacaÄŸÄ±z : 
+
+ALTER TABLE market_fct
+ADD market_id int not null identity(1,1) primary key
+
+--------- ÅŸimdi foreign keyleri tanÄ±mlayalÄ±m : 
+
+ALTER TABLE market_fct
+ALTER COLUMN  Ord_id  INT NOT NULL
+
+
+ALTER TABLE market_fct
+ADD CONSTRAINT FK_market_fct FOREIGN KEY(Ord_id)
+REFERENCES orders(Ord_id)
+
+
+ALTER TABLE market_fct
+ALTER COLUMN  Prod_id  INT NOT NULL
+
+ALTER TABLE market_fct
+ADD CONSTRAINT FK2_market_fct FOREIGN KEY(Prod_id)
+REFERENCES product(Prod_id)
+
+
+ALTER TABLE market_fct
+ALTER COLUMN  Ship_id  INT NOT NULL
+
+ALTER TABLE market_fct
+ADD CONSTRAINT FK3_market_fct FOREIGN KEY(Ship_id)
+REFERENCES shipping(Ship_id)
+
+
+ALTER TABLE market_fct
+ALTER COLUMN  Cust_id  INT NOT NULL
+
+ALTER TABLE market_fct
+ADD CONSTRAINT FK4_market_fct FOREIGN KEY(Cust_id)
+REFERENCES customer(Cust_id)
+
