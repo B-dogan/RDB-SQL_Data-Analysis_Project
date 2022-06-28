@@ -1,6 +1,6 @@
---1. Using the columns of “market_fact”, “cust_dimen”, “orders_dimen”, 
---“prod_dimen”, “shipping_dimen”, Create a new table, named as
---“combined_table”
+--1. Using the columns of â€œmarket_factâ€, â€œcust_dimenâ€, â€œorders_dimenâ€, 
+--â€œprod_dimenâ€, â€œshipping_dimenâ€, Create a new table, named as
+--â€œcombined_tableâ€
 
 SELECT *
 FROM customer C
@@ -52,7 +52,7 @@ WHERE C.Cust_id = A.Cust_id
 order by A.count_of_orders desc 
 
 
--- GROUP BY VE Oluþturduðumuz combined_table kullanýlarak : 
+-- GROUP BY VE OluÃ¾turduÃ°umuz combined_table kullanÃ½larak : 
 
 SELECT TOP (3) Customer_Name, cust_id, COUNT(Ord_id) total_ord
 FROM combined_table
@@ -66,7 +66,7 @@ SELECT DATEDIFF(DAY,CT.Order_Date, CT.Ship_Date)  DaysTakenForDelivery
 FROM combined_table CT
 
 
----DATEDIFF'in bize int döndürdüðünü hatýrlayalým !!!
+---DATEDIFF'in bize int dÃ¶ndÃ¼rdÃ¼Ã°Ã¼nÃ¼ hatÃ½rlayalÃ½m !!!
 
 
 ALTER TABLE combined_table
@@ -78,16 +78,16 @@ FROM combined_table
 UPDATE combined_table
 SET DaysTakenForDelivery = DATEDIFF(DAY,Order_Date,Ship_Date)
 		
---- bu sonuçta her satýr için bize  bu iþlemi yapacak !!!!!!!
+--- bu sonuÃ§ta her satÃ½r iÃ§in bize  bu iÃ¾lemi yapacak !!!!!!!
 
 SELECT *
 FROM combined_table
 
 
---- hatta þöyle de yapabilirdik : 
+--- hatta Ã¾Ã¶yle de yapabilirdik : 
 /*
 ALTER TABLE combined_table
-ADD DaysTakenForDelivery int  burada datatype yazýyoruz ya hani bu int döndüreceði için zaten direk þunu da yaza-
+ADD DaysTakenForDelivery int  burada datatype yazÃ½yoruz ya hani bu int dÃ¶ndÃ¼receÃ°i iÃ§in zaten direk Ã¾unu da yaza-
 bilirdik : 
             ALTER TABLE combined_table
 			ADD DaysTakenForDelivery AS
@@ -106,17 +106,17 @@ ORDER BY C.DaysTakenForDelivery DESC
 SELECT MONTH(C.Order_Date) MONTH_ , COUNT(DISTINCT C.Cust_id ) unique_customer
 FROM combined_table C
 GROUP BY MONTH(C.Order_Date) 
-HAVING MONTH(C.Order_Date) = 1         --- BU OCAK AYINDAKÝ UNIQUE CUSTOMERS SAYISI 
+HAVING MONTH(C.Order_Date) = 1         --- BU OCAK AYINDAKÃ UNIQUE CUSTOMERS SAYISI 
 
 
--- 2011 DE HER AY GELEN MÜÞTERÝLER KÝMLER NASIL BULURUZ ? 
+-- 2011 DE HER AY GELEN MÃœÃžTERÃLER KÃMLER NASIL BULURUZ ? 
 
 SELECT MONTH(C.Order_Date) MONTH_ ,year(C.Order_Date) year_, COUNT(DISTINCT C.Cust_id) unique_customer
 FROM combined_table C
 GROUP BY MONTH(C.Order_Date),year(C.Order_Date)
 HAVING year(C.Order_Date) = '2011'  
 
---------------------------------------------------------------------------------5 ÇÖZÜLMEDÝ??????
+--------------------------------------------------------------------------------5 Ã‡Ã–ZÃœLMEDÃ??????
 --6. Write a query to return for each user the time elapsed between the first 
 -- purchasing and the third purchasing, in ascending order by Customer ID.
  
@@ -136,7 +136,7 @@ ORDER BY C.Cust_id
 
 DATEDIFF(DAY,LEAD(O.Order_Date,2) OVER(PARTITION BY c.Cust_id,o.Ord_id ORDER BY o.Ord_id),O.Order_Date ) A
 
----------------- 6.SORUYU NUMBERÝNGLERÝ ÝZLEYÝNCE YAPALIM !!!!!!!
+---------------- 6.SORUYU NUMBERÃNGLERÃ ÃZLEYÃNCE YAPALIM !!!!!!!
 
 
 
@@ -145,16 +145,16 @@ DATEDIFF(DAY,LEAD(O.Order_Date,2) OVER(PARTITION BY c.Cust_id,o.Ord_id ORDER BY 
 --products purchased by the customer
 
 SELECT DISTINCT  CT.Cust_id,CT.Customer_Name
-FROM combined_table CT         -- 11.ÜRÜNÜ SATIN ALAN MÜÞTERÝLER
+FROM combined_table CT         -- 11.ÃœRÃœNÃœ SATIN ALAN MÃœÃžTERÃLER
 WHERE  CT.Prod_id = 11 
 
-INTERSECT        -- HEM 11'Ý HEM DE 14'Ü ALANLARI ARIYORUM BEN 
+INTERSECT        -- HEM 11'Ã HEM DE 14'Ãœ ALANLARI ARIYORUM BEN 
 
 SELECT DISTINCT  CT.Cust_id,CT.Customer_Name
 FROM combined_table CT          
-WHERE  CT.Prod_id = 14            -- 14.ÜRÜNÜ SATIN ALAN MÜÞTERÝLER 
+WHERE  CT.Prod_id = 14            -- 14.ÃœRÃœNÃœ SATIN ALAN MÃœÃžTERÃLER 
 
----19 KÝÞÝ HEM 11.ÜRÜNÜ HEM DE 14.ÜRÜNÜ ALMIÞ.
+---19 KÃÃžÃ HEM 11.ÃœRÃœNÃœ HEM DE 14.ÃœRÃœNÃœ ALMIÃž.
 
 CREATE VIEW  COMMONPROD11_14 AS 
 SELECT DISTINCT  CT.Cust_id,CT.Customer_Name
@@ -175,10 +175,179 @@ SELECT * , CASE r.kimkacurun_almis
 FROM RATIO_URUN r
 order by kimkacurun_almis desc
 
----------------- BU SORUNUN NE ÝSTEDÝÐÝNE BÝR DAHA BAKILABÝLÝR !.
+---------------- BU SORUNUN NE ÃSTEDÃÃÃNE BÃR DAHA BAKILABÃLÃR !.
+
+---------------------Customer Segmentation------------------------
+
+--1. Create a â€œviewâ€ that keeps visit logs of customers on a monthly basis.
+--(For each log, three field is kept: Cust_id, Year, Month)
+
+CREATE VIEW logs_of_customer as 
+SELECT CT.Cust_id ,YEAR(CT.Order_Date) YEAR_ ,MONTH(CT.Order_Date) MONTH_
+FROM combined_table CT
+
+
+SELECT * 
+FROM logs_of_customer
+ORDER BY 1,2,3
+
+-- 2. Create a â€œviewâ€ that keeps the number of monthly visits by users. (Show 
+--- separately all months from the beginning business)
+
+CREATE VIEW monthly_visit_count as 
+		SELECT  * , COUNT(*) OVER(PARTITION BY Cust_id ,YEAR_, MONTH_) num_of_monthly
+		FROM customer_visit  --- bu view'Ä± kullandÄ±m .
+
+
+SELECT * 
+FROM monthly_visit_count
+
+
+SELECT * ,DENSE_RANK() OVER(PARTITION BY Cust_id ORDER BY YEAR_ , MONTH_)
+FROM monthly_visit_count
+
+
+--3. For each visit of customers, create the next month of the visit as a separate  column
+
+SELECT * 
+FROM monthly_visit_count
+
+
+SELECT  YEAR_, MONTH_,
+		DENSE_RANK () OVER (PARTITION BY Cust_id ORDER BY [YEAR_] , [MONTH_])		
+FROM	monthly_visit_count
+
+-- cust_id partitiona alÄ±p DENSE_RANK yapÄ±nca,
+--CUSTOMER'A GÃ–RE; yÄ±l ve ay ikililerine cust_id bazÄ±nda numara vermiÅŸ oldum.
+SELECT  *,
+		DENSE_RANK () OVER (ORDER BY [YEAR_] , [MONTH_]) CURRENT_MONTH		
+FROM	monthly_visit_count
+ORDER BY 1,2,3
+
+
+CREATE VIEW NEXT_VISIT AS
+SELECT *,
+		LEAD(CURRENT_MONTH, 1) OVER (PARTITION BY Cust_id ORDER BY CURRENT_MONTH) NEXT_VISIT_MONTH
+FROM
+(
+SELECT  *,
+		DENSE_RANK () OVER (ORDER BY [YEAR_] , [MONTH_]) CURRENT_MONTH
+		
+FROM	monthly_visit_count
+) A
+
+select *
+from NEXT_VISIT
 
 
 
+--4. Calculate the monthly time gap between two consecutive visits by each customer.
+
+CREATE VIEW gaps AS
+SELECT *,
+		NEXT_VISIT_MONTH - CURRENT_MONTH time_gaps
+FROM	NEXT_VISIT
+
+
+select *
+from gaps
+
+--5. Categorise customers using average time gaps. Choose the most fitted
+--labeling model for you.
+--For example: 
+--o Labeled as churn if the customer hasn't made another purchase in the 
+--months since they made their first purchase.
+--o Labeled as regular if the customer has made a purchase every month.
+--Etc.
+
+select * 
+from gaps
+
+
+SELECT cust_id, AVG(time_gaps) avg_time_gap
+FROM gaps
+GROUP BY cust_id
+-- burada da her mÃ¼ÅŸterinin alÄ±ÅŸveriÅŸleri arasÄ±nda geÃ§en ortalama zamanlarÄ± getirdim.
+	-- buna gÃ¶re artÄ±k mÃ¼ÅŸterilerin alÄ±ÅŸveriÅŸ yapma sÄ±klÄ±klarÄ±nÄ± gÃ¶rebiliyorum.
+
+SELECT cust_id, avg_time_gap,
+		CASE WHEN avg_time_gap = 1 THEN 'retained'
+			WHEN avg_time_gap > 1 THEN 'irregular'
+			WHEN avg_time_gap IS NULL THEN 'Churn'
+			ELSE 'UNKNOWN' END CUST_LABELS
+FROM
+		(
+		SELECT Cust_id, AVG(time_gaps) avg_time_gap
+		FROM	gaps
+		GROUP BY Cust_id
+		) A
+
+----------------------------------***************************************------------------------------
+--Month-Wise Retention Rate
+--Find month-by-month customer retention ratei since the start of the business.
+
+--There are many different variations in the calculation of Retention Rate. But we will 
+--try to calculate the month-wise retention rate in this project.
+--So, we will be interested in how many of the customers in the previous month could 
+--be retained in the next month.
+--Proceed step by step by creating â€œviewsâ€. You can use the view you got at the end of 
+--the Customer Segmentation section as a source.
+
+
+--- 1. Find the number of customers retained month-wise. (You can use time gaps)
+SELECT DISTINCT YEAR_,
+				MONTH_,
+				CURRENT_MONTH,
+				NEXT_VISIT_MONTH,
+				COUNT(cust_id) OVER (PARTITION BY NEXT_VISIT_MONTH) RETENTION_MONTH_WISE
+FROM			gaps
+ORDER BY		NEXT_VISIT_MONTH
+
+
+SELECT	DISTINCT cust_id, [YEAR_],
+		[MONTH_],
+		CURRENT_MONTH,
+		NEXT_VISIT_MONTH,
+		time_gaps,
+		COUNT (cust_id)	OVER (PARTITION BY NEXT_VISIT_MONTH) RETENTITON_MONTH_WISE
+FROM	gaps
+where	time_gaps =1
+ORDER BY cust_id, NEXT_VISIT_MONTH
+
+
+--2. Calculate the month-wise retention rate.
+
+CREATE VIEW CURRENT_NUM_OF_CUST AS
+SELECT	DISTINCT cust_id, [YEAR_],
+		[MONTH_],
+		CURRENT_MONTH,
+		COUNT (cust_id)	OVER (PARTITION BY CURRENT_MONTH) RETENTITON_MONTH_WISE
+FROM     gaps
+
+SELECT *
+FROM	CURRENT_NUM_OF_CUST
+
+
+
+CREATE VIEW NEXT_NUM_OF_CUST AS
+SELECT	DISTINCT cust_id, [YEAR_],
+		[MONTH_],
+		CURRENT_MONTH,
+		NEXT_VISIT_MONTH,
+		COUNT (cust_id)	OVER (PARTITION BY NEXT_VISIT_MONTH) RETENTITON_MONTH_WISE
+FROM	gaps
+WHERE	time_gaps = 1
+AND		CURRENT_MONTH > 1
+
+
+SELECT DISTINCT
+		B.[YEAR_],
+		B.[MONTH_],
+		B.CURRENT_MONTH,
+		B.NEXT_VISIT_MONTH,
+		1.0 * B.RETENTITON_MONTH_WISE / A.RETENTITON_MONTH_WISE RETENTION_RATE
+FROM	CURRENT_NUM_OF_CUST A LEFT JOIN NEXT_NUM_OF_CUST B
+ON		A.CURRENT_MONTH + 1 = B.NEXT_VISIT_MONTH
 
 
 
